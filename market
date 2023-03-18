@@ -1,8 +1,16 @@
 Table user {
-  user_id Guid [pk, increment]
+  id Guid [pk, increment]
   username varchar(50) [not null, unique]
   password varchar(255) [not null]
   email varchar(255) [not null, unique]
+  fb_email varchar(255) [default:Null]
+  fb_id varchar(255) [default:Null]
+  google_user_id varchar(255) [default: NULL]
+  apple_id varchar(255) [default: NULL]
+  fb_name varchar(255) [not null]
+  phone_no varchar(100) [default: NULL]
+  number varchar(100) [not null] // user number to be shown on App
+  login_type login_type_enum [default: NULL]
   first_name varchar(50) [not null]
   last_name varchar(50) [not null]
   address varchar(255) [not null]
@@ -10,10 +18,46 @@ Table user {
   state varchar(50) [not null]
   zip_code varchar(10) [not null]
   phone_number varchar(20) [not null]
+  age int(11) [default: NULL]
+  gender varchar(255) [default: NULL]
+  lastlogin timestamp [default: null]
+  role_type ENUM('user','shopkeeper')
 }
 
+//for google map
+//access location and deliver
+Table googleuserlocation{
+    id Guid [pk,increment]
+    location varchar(255) 
+    user_id Guid [ref: - user.id]
+}
+
+Table user_device_detail
+{
+    id Guid [pk, not null]
+    user_id guid [not null, ref: - user.id]
+    last_login datetime [default: NULL]
+    device_name varchar(255) [default: NULL]
+    device_type varchar(50) [default: NULL]
+    mobile_carrier varchar(50) [default: NULL]
+    network_type varchar(255) [default: NULL]
+    os varchar(50) [not null]
+    os_version varchar(50) [default: NULL]
+    operator_name varchar(255) [default: NULL]
+}
+
+enum login_type_enum
+{
+  "facebook"
+  "phone_no"
+  "google"
+  "autologin"
+  "apple"
+}
+
+
 Table product {
-  product_id Guid [pk, increment]
+  id Guid [pk, increment]
   name varchar(255) [not null]
   description text
   price decimal(10,2) [not null]
@@ -39,26 +83,29 @@ Table ads {
   product_id int [not null]
 }
 
+Table recommended
+{
+    id guid 
+    user_id guid
+    product_id guid
+}
+
 
 Table product_list {
   list_id int [pk, increment]
-  name varchar(255) [not null]
+  title varchar(255) [not null]
+  image_url varchar(255) [not null]
   status ENUM('active',inactive)
   short_description varchar(50) [not null]
 }
 
 
+//Electronic Device > Laptops > Macbooks
 Table category {
   category_id Guid [pk, increment]
   name varchar(50) [not null]
-  description text
-}
-
-Table subcategory {
-  subcategory_id int [pk, increment]
-  name varchar(50) [not null]
-  description text
-  category_id int [not null]
+  isSecondSubCategory bool [null]
+  isThirdSubCategory bool [null]
 }
 
 
@@ -120,13 +167,11 @@ Table order_item {
 
 //choice ingredients
 //နံနံပင်မထည့်နဲ့ ...
-Table productdevliveryoptions {
+Table devliveryoptions {
    optionId Guid [pk,increment,not null]
    name varchar(255)
    status bool // is clicked or not 
 }
-
-
 
 Table order_history{
   order_history_id Guid [not null,increment]
@@ -166,20 +211,20 @@ Table address {
   zip_code varchar(10) [not null]
 }
 
-Ref: user.user_id > order.user_id
-Ref: user.user_id > payment.user_id
-Ref: user.user_id > address.user_id
+Ref: user.id > order.user_id
+Ref: user.id > payment.user_id
+Ref: user.id > address.user_id
 Ref: ads.shop_id > shop.shop_id
-Ref: ads.product_id > product.product_id
-Ref: order_item.order_id - productdevliveryoptions.optionId
-Ref: shop.shop_id > product.product_id
-Ref: subcategory.category_id > category.category_id
+Ref: ads.product_id > product.id
+Ref: order_item.order_id > devliveryoptions.optionId
+Ref: shop.shop_id > product.id
 Ref: product.category_id > category.category_id
 Ref: order.user_id > cart.user_id
 Ref: order.payment_id > payment.payment_id
 Ref: order.order_id < order_item.order_id
 Ref: order.order_history_id - order_history.order_history_id
-Ref: product.product_id < order_item.product_id
+Ref: product.id < order_item.product_id
 Ref: cart.cart_id < cart_item.cart_id
-Ref: product.product_id < cart_item.product_id
+Ref: product.id < cart_item.product_id
 Ref: address.user_id > order.shipping_address
+
