@@ -24,6 +24,15 @@ Table user {
   role_type ENUM('user','shopkeeper')
 }
 
+enum login_type_enum
+{
+  "facebook"
+  "phone_no"
+  "google"
+  "autologin"
+  "apple"
+}
+
 //for google map
 //access location and deliver
 Table googleuserlocation{
@@ -31,6 +40,17 @@ Table googleuserlocation{
     location varchar(255) 
     user_id Guid [ref: - user.id]
 }
+
+Table rating {
+id Guid [pk, increment]
+user_id Guid [not null]
+product_id Guid [not null]
+rating int [not null]
+review text [not null]
+date datetime [not null]
+}
+
+
 
 Table user_device_detail
 {
@@ -46,27 +66,32 @@ Table user_device_detail
     operator_name varchar(255) [default: NULL]
 }
 
-enum login_type_enum
-{
-  "facebook"
-  "phone_no"
-  "google"
-  "autologin"
-  "apple"
-}
+
 
 
 Table product {
   id Guid [pk, increment]
   name varchar(255) [not null]
   description text
-  price decimal(10,2) [not null]
   stock int [not null]
   category_id Guid
   wating_time varchar(50)
   media_id Guid [ref: > media.media_id]
   status ENUM('active', 'inactive') [not null]
 }
+
+
+Table pricing {
+  id Guid [pk, increment]
+  product_id Guid [not null]
+  base_price decimal(10,2) [not null]
+  discounted_price decimal(10,2) [not null]
+  discount_percentage decimal(5,2) [not null]
+  start_date datetime [not null]
+  end_date datetime [not null]
+  count_down varchar(255)
+}
+
 
 Table ads {
   ad_id int [pk, increment]
@@ -214,6 +239,9 @@ Table address {
 Ref: user.id > order.user_id
 Ref: user.id > payment.user_id
 Ref: user.id > address.user_id
+Ref: user.id > rating.user_id
+Ref: product.id > rating.product_id
+Ref: product.id > pricing.product_id
 Ref: ads.shop_id > shop.shop_id
 Ref: ads.product_id > product.id
 Ref: order_item.order_id > devliveryoptions.optionId
