@@ -1,0 +1,185 @@
+Table user {
+  user_id Guid [pk, increment]
+  username varchar(50) [not null, unique]
+  password varchar(255) [not null]
+  email varchar(255) [not null, unique]
+  first_name varchar(50) [not null]
+  last_name varchar(50) [not null]
+  address varchar(255) [not null]
+  city varchar(50) [not null]
+  state varchar(50) [not null]
+  zip_code varchar(10) [not null]
+  phone_number varchar(20) [not null]
+}
+
+Table product {
+  product_id Guid [pk, increment]
+  name varchar(255) [not null]
+  description text
+  price decimal(10,2) [not null]
+  stock int [not null]
+  category_id Guid
+  wating_time varchar(50)
+  media_id Guid [ref: > media.media_id]
+  status ENUM('active', 'inactive') [not null]
+}
+
+Table ads {
+  ad_id int [pk, increment]
+  title varchar(255) [not null]
+  image_url varchar(255) [not null]
+  ad_type ENUM('banner', 'popup') [not null]
+  start_date datetime [not null]
+  end_date datetime [not null]
+  target_url varchar(255) [not null]
+  status ENUM('active', 'inactive') [not null]
+  impressions int [not null]
+  clicks int [not null]
+  shop_id int [not null]
+  product_id int [not null]
+}
+
+
+Table product_list {
+  list_id int [pk, increment]
+  name varchar(255) [not null]
+  status ENUM('active',inactive)
+  short_description varchar(50) [not null]
+}
+
+
+Table category {
+  category_id Guid [pk, increment]
+  name varchar(50) [not null]
+  description text
+}
+
+Table subcategory {
+  subcategory_id int [pk, increment]
+  name varchar(50) [not null]
+  description text
+  category_id int [not null]
+}
+
+
+Table shop{
+  shop_id Guid [pk,increment]
+  name varchar (255) [not null]
+  Owner_id Guid
+  description text
+  image_url text 
+  sorting float(11) 
+  start_date datetime
+  status ENUM('active', 'inactive') [not null]
+}
+
+Table media {
+  media_id Guid [pk,increment]
+  image_url varchar(255) [null]
+  ImageType ENUM('coverimage','thumbnail','video')
+  video_url varchar(255) [null]
+  coverimage_url varchar(255)
+}
+
+Table owner{
+  owner_id Guid [pk,increment]
+  name varchar(50)
+  email varchar(255)
+  phone_number varchar(255)
+}
+
+
+Table mediaowner{
+  media_id Guid [ref: > media.media_id]
+  owner_id Guid [ref: > owner.owner_id]
+}
+
+Table ShopOwner {
+   shop_id Guid [ref: > shop.shop_id]
+   owner_id Guid [ref: > owner.owner_id]
+   primary key (shop_id, owner_id)
+}
+
+Table order {
+  order_id Guid [pk, increment]
+  user_id Guid [not null]
+  order_history_id Guid [not null]
+  order_date datetime [not null]
+  total decimal(10,2) [not null]
+  shipping_address varchar(255) [not null]
+  payment_id int
+}
+
+Table order_item {
+  order_id Guid [not null]
+  product_id Guid [not null]
+  quantity int [not null]
+  price decimal(10,2) [not null]
+  develivermethod ENUM('deliver', 'pickup') [not null]
+}
+
+//choice ingredients
+//နံနံပင်မထည့်နဲ့ ...
+Table productdevliveryoptions {
+   optionId Guid [pk,increment,not null]
+   name varchar(255)
+   status bool // is clicked or not 
+}
+
+
+
+Table order_history{
+  order_history_id Guid [not null,increment]
+  order_id Guid
+  order_status ENUM('Processing', 'Shipped', 'Delivered', 'Cancelled') [not null]
+  date datetime [not null]
+  description text
+}
+
+Table cart {
+  cart_id Guid [pk, increment]
+  user_id Guid [not null]
+  total decimal(10,2) [not null]
+}
+
+Table cart_item {
+  cart_id Guid [not null]
+  product_id Guid [not null]
+  quantity int [not null]
+  price decimal(10,2) [not null]
+}
+
+Table payment {
+  payment_id Guid [pk, increment]
+  user_id Guid [not null]
+  payment_date datetime [not null]
+  amount decimal(10,2) [not null]
+  payment_status varchar(50) [not null]
+}
+
+Table address {
+  address_id Guid [pk, increment]
+  user_id Guid [not null]
+  street varchar(255) [not null]
+  city varchar(50) [not null]
+  state varchar(50) [not null]
+  zip_code varchar(10) [not null]
+}
+
+Ref: user.user_id > order.user_id
+Ref: user.user_id > payment.user_id
+Ref: user.user_id > address.user_id
+Ref: ads.shop_id > shop.shop_id
+Ref: ads.product_id > product.product_id
+Ref: order_item.order_id - productdevliveryoptions.optionId
+Ref: shop.shop_id > product.product_id
+Ref: subcategory.category_id > category.category_id
+Ref: product.category_id > category.category_id
+Ref: order.user_id > cart.user_id
+Ref: order.payment_id > payment.payment_id
+Ref: order.order_id < order_item.order_id
+Ref: order.order_history_id - order_history.order_history_id
+Ref: product.product_id < order_item.product_id
+Ref: cart.cart_id < cart_item.cart_id
+Ref: product.product_id < cart_item.product_id
+Ref: address.user_id > order.shipping_address
